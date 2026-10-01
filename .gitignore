@@ -1,0 +1,18 @@
+# Python environment and caches (regenerated automatically)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Data and model files (too big for git; we download/rebuild them)
+data/
+models/
+mlruns/
+mlartifacts/
+
+# Secrets
+.env
+
+# macOS junk
+.DS_Store
