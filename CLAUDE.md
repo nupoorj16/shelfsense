@@ -29,8 +29,8 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
 - pytest: standard Python test runner. pre-commit: runs ruff + hygiene hooks before every commit.
 
 ## Plan
-1. Project setup (uv, folders, git, ruff, pre-commit, pytest)  <- CURRENT
-2. Find, download, explore dataset
+1. Project setup (uv, folders, git, ruff, pre-commit, pytest)  DONE
+2. Find, download, explore dataset  <- NEXT
 3. Clean + time-based split
 4. Baselines (popularity, simple similarity)
 5. Embeddings + FAISS retrieval
@@ -46,8 +46,15 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
 - 2026-09-30: Kickoff. Asked user about their background. Explained recommenders. Introduced step 1 (not started coding yet).
 - User's background: skipped the questions; wants plain step-by-step instructions. Assume beginner, keep chunks small.
   Python is rusty ("been a while") — include quick syntax refreshers with analogous (not exact) examples.
-- Step 1: 1a–1c done (uv init --package --python 3.12, uv run works). Claude wrote .gitignore.
-  1d done (ruff, pytest, pre-commit installed as dev deps). 1e: smoke test passes (user asked for the code, given).
-  Ruff flagged I001 in test_smoke.py (trailing space + 1 blank line); user to fix with ruff --fix/format.
-  Claude wrote .pre-commit-config.yaml (pre-commit-hooks v6.0.0 + ruff-pre-commit v0.16.9, validated).
-  Remaining in step 1: user runs pre-commit install + run --all-files, then first commit.
+- 2026-10-01: STEP 1 DONE. Commit 41f89b3 "set up project: uv, ruff, pytest, pre-commit".
+  Smoke test passes, pre-commit installed and all hooks pass. Claude wrote LEARNING_LOG.md (step 1) — user to commit it.
+  Lessons hit: running commands from tests/ instead of root (twice), pre-commit skips untracked files, --amend.
+- Step 2 (NOT started — waiting for user to say ready). Dataset research done by Claude:
+  Amazon Reviews 2023 (McAuley Lab, UCSD; Hou et al. 2024, arXiv:2403.03952). No formal license stated;
+  intended for research → cite it, don't commit/redistribute raw data (download via script), non-commercial portfolio use.
+  Chosen category: Video_Games. Raw: 2.8M users, 137K items, 4.6M ratings; reviews .jsonl.gz = 814 MB, meta = 103 MB.
+  5-core: 94.8K users, 25.6K items, 815K ratings (fits a 16 GB laptop; ~25K items quick to embed).
+  Rejected All_Beauty: 5-core is only 253 users / 356 items (too sparse). Backup: Software (5-core 146K users, 17.6K items).
+  URLs: https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/Video_Games.jsonl.gz
+        https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_Video_Games.jsonl.gz
+  Plan: user writes download script + does own cleaning/5-core filter/time split (learning goal), not the pre-made benchmark CSVs.
