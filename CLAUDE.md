@@ -30,7 +30,7 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
 
 ## Plan
 1. Project setup (uv, folders, git, ruff, pre-commit, pytest)  DONE
-2. Find, download, explore dataset  <- NEXT
+2. Find, download, explore dataset  <- CURRENT
 3. Clean + time-based split
 4. Baselines (popularity, simple similarity)
 5. Embeddings + FAISS retrieval
@@ -52,9 +52,34 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
 - Step 2 (NOT started — waiting for user to say ready). Dataset research done by Claude:
   Amazon Reviews 2023 (McAuley Lab, UCSD; Hou et al. 2024, arXiv:2403.03952). No formal license stated;
   intended for research → cite it, don't commit/redistribute raw data (download via script), non-commercial portfolio use.
-  Chosen category: Video_Games. Raw: 2.8M users, 137K items, 4.6M ratings; reviews .jsonl.gz = 814 MB, meta = 103 MB.
+  UPDATE 2026-10-01: user is a programmer, watches lots of TV, loves shopping esp. makeup & skincare; asked Claude to pick.
+  NEW CHOICE: Beauty_and_Personal_Care, narrowed to Makeup + Skin Care subcategories (via meta `categories` field).
+  Why: user's domain knowledge = can sanity-check recs by eye; rich text (ingredients, skin type) for embeddings;
+  constant new launches = real cold-start story. Cost: big files (reviews 2.96 GB gz, meta 0.71 GB gz; full 5-core
+  730K users / 208K items / 6.6M ratings) → stream in chunks, keep few columns, filter subcategories, maybe a time window.
+  Rejected: Movies_and_TV (mostly physical DVD sales, dated), Software (less relatable; the project already shows coding).
+  Previous candidate notes (kept for reference): Video_Games.
+  User then worried a male interviewer may not relate to beauty; Claude said domain barely matters but offered neutral
+  options: Video_Games (fits easily), Cell_Phones_and_Accessories (5-core 381K users/112K items/2.8M ratings;
+  2.5 GB + 0.86 GB gz). FINAL DECISION (2026-10-01): BEAUTY (Beauty_and_Personal_Care → makeup + skincare).
+- Step 2 STARTED. 2a: user writes download script src/shelfsense/data/download.py using stdlib urllib
+  (no new dependency), saving to data/raw/, skipping files that already exist.
+  User asked for the full code → Claude gave it (tested in scratchpad, uses .part temp file + rename).
+  Gotcha: system python3 (python.org 3.13) fails with SSL CERTIFICATE_VERIFY_FAILED; uv's 3.12 works → always `uv run`.
+  User's pattern: prefers being given exact commands + code with explanations over hints.
+- 2a DONE: data/raw/ has Beauty reviews (2.96 GB gz, verified with gzip -t) + meta (0.71 GB gz). Script not yet committed.
+  Claude's peek: meta `categories` is a list; categories[1] is subcategory. In first 50K products: Hair Care 15.3K,
+  Skin Care 9.0K, Makeup 6.4K, Nail 6.3K, Tools & Accessories 5.6K (incl. 'Makeup Brushes & Tools'), Fragrance 2.3K.
+  → filter: categories[1] in {"Skin Care", "Makeup"} (decide later whether to add Makeup Brushes & Tools).
+  Review fields: rating, title, text, images, asin, parent_asin, user_id, timestamp (ms epoch), helpful_vote, verified_purchase.
+  Meta fields: main_category, title, average_rating, rating_number, features, description, price, images, videos, store,
+  categories, details, parent_asin, bought_together. Use parent_asin as the product ID everywhere.
+  First 100K review rows: 10K users, mean 9.8 reviews/user → file looks GROUPED BY USER, so head-of-file is a biased sample
+  (teaching moment for user in exploration). Dates 2000–2023. Ratings skew to 5 (61%).
+- 2b NEXT: uv add pandas; uv add --dev ipykernel (VS Code notebooks; lighter than full jupyter);
+  notebooks/01_explore.ipynb on a 100K-row sample. Raw: 2.8M users, 137K items, 4.6M ratings; reviews .jsonl.gz = 814 MB, meta = 103 MB.
   5-core: 94.8K users, 25.6K items, 815K ratings (fits a 16 GB laptop; ~25K items quick to embed).
-  Rejected All_Beauty: 5-core is only 253 users / 356 items (too sparse). Backup: Software (5-core 146K users, 17.6K items).
-  URLs: https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/Video_Games.jsonl.gz
-        https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_Video_Games.jsonl.gz
+  Rejected All_Beauty: 5-core is only 253 users / 356 items (too sparse). Backup: Musical_Instruments (smallest, 0.6 GB).
+  URL pattern: https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/<Category>.jsonl.gz
+               https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_<Category>.jsonl.gz
   Plan: user writes download script + does own cleaning/5-core filter/time split (learning goal), not the pre-made benchmark CSVs.
