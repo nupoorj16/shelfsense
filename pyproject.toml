@@ -7,7 +7,9 @@ authors = [
     { name = "nupoorj16", email = "nupoorj16@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pandas>=3.0.6",
+]
 
 [project.scripts]
 shelfsense = "shelfsense:main"
