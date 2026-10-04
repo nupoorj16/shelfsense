@@ -35,3 +35,46 @@ Key ideas from each step, in plain language, plus "why we chose X over Y".
 | ruff | flake8 + black + isort | One fast tool replaces three. |
 | pytest | unittest | Less boilerplate (plain `assert`), the industry default. |
 | pre-commit | "remember to run ruff" | Automatic — humans forget, hooks don't. |
+
+---
+
+## Step 2: Data (download, explore, filter)
+
+### Concepts
+- **JSONL:** one JSON record per line, so huge files can be read a piece at a time.
+- **Chunked reading:** read 100K–500K rows at a time instead of the whole 24M-row file (pizza slice by slice).
+- **Biased sample:** the review file is sorted by user, so "first 100K rows" over-represents heavy reviewers. Always ask how a sample was taken.
+- **Outliers:** one "user" had 2,973 reviews in the sample. The median user had 1–3. Averages lie when outliers exist; look at the median.
+- **Sparsity:** most users touch a tiny fraction of products (median user in the full data: 1 review). The core challenge of recommenders.
+- **Boolean filtering:** `df[mask]` keeps rows where `mask` is True (like a stencil).
+- **Data cleaning:** the price column mixed numbers, None and the text "—". `pd.to_numeric(errors="coerce")` turns junk into NaN (missing).
+
+### Debugging lessons
+- `KeyError: 'reviewerID'` → that column doesn't exist (it was the 2018 dataset's name). Check `df.columns`.
+- `NameError` → you used a variable that was never created in *this* file.
+- A program that prints nothing: check the file is saved and non-empty.
+- Silent git bug: `.gitignore` line `data/` ignored *every* folder named data, including our code. `/data/` anchors it to the project root. Always read `git status` before committing.
+- pre-commit "Failed – files were modified" means it fixed things. `git add -u` and commit again.
+
+### Why X over Y
+| Chose | Over | Why |
+|---|---|---|
+| Amazon Reviews 2023 | older 2018 version | Newer, bigger, cleaner metadata, documented. |
+| Makeup + Skin Care | whole Beauty category / other categories | Domain I know (can sanity-check results), rich product text, constant new launches (cold start). |
+| Parquet | CSV | ~10x smaller/faster, keeps data types (dates stay dates, lists stay lists). |
+| stdlib `urllib` | `requests` | No new dependency needed for a simple download. |
+
+---
+
+## Step 3: Clean + time split
+
+### Concepts
+- **Duplicates:** ~100K times the same person reviewed the same product twice. We keep the first one.
+- **k-core (k=5):** repeatedly drop users and products with fewer than 5 reviews, until stable. You can't learn taste from 1 review. Result: 1.2M reviews, 136K users, 47K products.
+- **Time-based split:** train = before 2022-07-01, validation = 2022-07-01 to 2022-12-31, test = 2023. Like real life: learn from the past, predict the future.
+- **Data leakage:** letting future information into training (e.g., random splits). Makes scores look great but fake.
+- **Warm vs. cold:** a "warm" user has history in training. A "cold" user/product is brand new. In our test period, about half of reviews are for products that did not exist in training. Beauty launches constantly.
+- **Validation set:** a middle period used to tune/train the ranker without touching the test set. The test set is only for the final score.
+
+### Known limitation (be honest in interviews)
+- The 5-core filter is computed over all years, so it slightly uses future info to decide which users/products to keep. This is the standard benchmark practice (same as the dataset authors' 5-core files), but a stricter setup would filter on training data only.
