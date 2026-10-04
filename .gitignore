@@ -5,11 +5,12 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Data and model files (too big for git; we download/rebuild them)
-data/
-models/
-mlruns/
-mlartifacts/
+# Data and model files (too big for git; we download/rebuild them).
+# Leading "/" = only the folder at the project root, not src/shelfsense/data/.
+/data/
+/models/
+/mlruns/
+/mlartifacts/
 
 # Secrets
 .env

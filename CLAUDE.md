@@ -19,7 +19,7 @@ Target roles: SWE/SDE I and AI Engineer.
 - Keep updated: CLAUDE.md (this file), LEARNING_LOG.md, RESUME_NOTES.md, README.md (incl. "How I used AI").
 
 ## Environment
-macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
+macOS (Apple Silicon), 16 GB RAM, uv 0.12, git 2.50. Project Python 3.12 via uv (system python3 is 3.13 — don't use it).
 
 ## Tools & decisions
 - Python 3.12 (not 3.13): ML libs (FAISS, LightGBM, torch) lag on newest Python.
@@ -49,7 +49,7 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
 - 2026-10-01: STEP 1 DONE. Commit 41f89b3 "set up project: uv, ruff, pytest, pre-commit".
   Smoke test passes, pre-commit installed and all hooks pass. Claude wrote LEARNING_LOG.md (step 1) — user to commit it.
   Lessons hit: running commands from tests/ instead of root (twice), pre-commit skips untracked files, --amend.
-- Step 2 (NOT started — waiting for user to say ready). Dataset research done by Claude:
+- Step 2 dataset research done by Claude:
   Amazon Reviews 2023 (McAuley Lab, UCSD; Hou et al. 2024, arXiv:2403.03952). No formal license stated;
   intended for research → cite it, don't commit/redistribute raw data (download via script), non-commercial portfolio use.
   UPDATE 2026-10-01: user is a programmer, watches lots of TV, loves shopping esp. makeup & skincare; asked Claude to pick.
@@ -76,10 +76,30 @@ macOS (Apple Silicon), 16 GB RAM, uv 0.12, Python 3.13, git 2.50.
   categories, details, parent_asin, bought_together. Use parent_asin as the product ID everywhere.
   First 100K review rows: 10K users, mean 9.8 reviews/user → file looks GROUPED BY USER, so head-of-file is a biased sample
   (teaching moment for user in exploration). Dates 2000–2023. Ratings skew to 5 (61%).
-- 2b NEXT: uv add pandas; uv add --dev ipykernel (VS Code notebooks; lighter than full jupyter);
-  notebooks/01_explore.ipynb on a 100K-row sample. Raw: 2.8M users, 137K items, 4.6M ratings; reviews .jsonl.gz = 814 MB, meta = 103 MB.
-  5-core: 94.8K users, 25.6K items, 815K ratings (fits a 16 GB laptop; ~25K items quick to embed).
-  Rejected All_Beauty: 5-core is only 253 users / 356 items (too sparse). Backup: Musical_Instruments (smallest, 0.6 GB).
+- Download script committed (05af48e). pandas (dep) + ipykernel (dev) added, not yet committed.
+- 2b IN PROGRESS: notebooks/01_explore.ipynb created (empty). User got lost at "explore a sample" →
+  re-explained as a click-by-click VS Code notebook walkthrough, one cell at a time.
+  Notebook cells done: head(), basic stats (hit KeyError 'reviewerID' — old 2018 column name; confused .columns),
+  reviews-per-user describe (max 2973 → power reviewers/outliers). User understands file is sorted by user (biased sample).
+- 2c NEXT: user writes src/shelfsense/data/build_products.py (skeleton with TODOs given): chunked read of meta,
+  keep categories[1] in {Skin Care, Makeup}, save data/interim/products.parquet. Needs `uv add pyarrow`.
+  Claude's test: 1,028,914 products total → 320,042 kept (Skin Care 199,381; Makeup 120,661); ~40 s.
+  No duplicate parent_asin, no missing titles. price: 198K None, 122K float, 15 strings '—' → to_parquet raises
+  ArrowInvalid "Could not convert '—'". DELIBERATELY not in skeleton: let user hit it, fix via pd.to_numeric(errors="coerce").
+- 2026-10-04: 2c WORKS. data/interim/products.parquet (25 MB, 320,042 rows; 198,105 missing prices). User added to_numeric.
+  BUG FOUND (Claude's fault): .gitignore `data/` also ignored src/shelfsense/data/ → download.py & build_products.py
+  were never committed (commits 32ac8dd/05af48e only had pyproject/uv.lock) and ruff/pre-commit skipped them.
+  Fixed to `/data/` (root-anchored). Now ruff shows F841 unused `subcategory` on build_products.py line 27–28 → user to fix.
+  Then commit: .gitignore, src/shelfsense/data/, notebooks/, pyproject.toml, uv.lock, CLAUDE.md.
+  F841 fixed by user, ruff passes. All files STAGED (git add) but user had not yet run `git commit` as of 2026-10-04.
+- 2d: Claude wrote skeleton src/shelfsense/data/build_reviews.py with 2 TODOs (isin product_ids; nunique users).
+  Claude's full-run measurement (expected results for user's build_reviews.py): 23,911,390 total reviews →
+  7,426,398 kept; 4,407,355 unique users; 319,981 products with ≥1 review. Dates 2000-04-01 → 2023-09-13.
+  ~520 MB in memory, ~4m20s runtime. Reviews/user: median 1, mean 1.69, max 1,531 → extreme sparsity.
+  Users with ≥5 reviews: 184,414; items with ≥5: 125,082. Duplicate (user, product) pairs: 100,171 → handle in step 3.
+- 2d original plan: chunked read of reviews (4 cols: user_id, parent_asin, rating, timestamp), keep only reviews of kept products,
+  save data/interim/reviews.parquet. Claude timing: ~8.7 s per 1M rows → full file ~3.5 min. Then full-data stats in notebook.
+- Reference: Rejected All_Beauty (5-core only 253 users). Backup category: Musical_Instruments (0.6 GB).
   URL pattern: https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/review_categories/<Category>.jsonl.gz
                https://mcauleylab.ucsd.edu/public_datasets/data/amazon_2023/raw/meta_categories/meta_<Category>.jsonl.gz
-  Plan: user writes download script + does own cleaning/5-core filter/time split (learning goal), not the pre-made benchmark CSVs.
+  Plan: user does own cleaning/5-core filter/time split (learning goal), not the pre-made benchmark CSVs.
