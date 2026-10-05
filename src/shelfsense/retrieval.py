@@ -23,6 +23,9 @@ class EmbeddingRetriever:
         self.catalog_ids = [ids[i] for i in keep]
         # Inner product on normalized vectors = cosine similarity.
         # Exact search is fast enough for ~300K items; at millions we'd use HNSW or IVF.
+        faiss.omp_set_num_threads(
+            1
+        )  # multithreaded search segfaults/hangs with LightGBM's OpenMP on macOS
         self.index = faiss.IndexFlatIP(vectors.shape[1])
         self.index.add(vectors[keep])
 

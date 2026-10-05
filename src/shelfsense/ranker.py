@@ -8,10 +8,8 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from shelfsense.candidates import FEATURES
-from shelfsense.config import ARTIFACTS_DIR, SEED
-
-RANKER_FILE = ARTIFACTS_DIR / "ranker.txt"
+from shelfsense.config import SEED
+from shelfsense.features import FEATURES
 
 PARAMS = {
     "objective": "lambdarank",

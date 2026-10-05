@@ -40,13 +40,16 @@ cite, never commit raw data. Category Beauty_and_Personal_Care, filtered to cate
 ## Plan / progress
 1. Project setup — DONE (41f89b3)
 2. Download + explore — DONE (cbfc9e7, 51326a3)
-3. Clean + time-based split  <- CURRENT (Claude building)
-4. Baselines (popularity, item co-occurrence)
-5. Embeddings + FAISS retrieval
-6. LightGBM ranker
-7. Evaluate vs. baselines (Recall@K, NDCG@K)
-8. Cold start
+3. Clean + time-based split — DONE (457f7e5)
+4. Baselines (popularity, item co-occurrence) — DONE (d732aac)
+5. Embeddings + FAISS retrieval — DONE (82ddc41)
+6. LightGBM ranker — DONE (82ddc41)
+7. Evaluate vs. baselines (Recall@K, NDCG@K) — DONE (ranker R@10 0.0304 vs popularity 0.0190)
+8. Cold start  <- CURRENT
 9. MLflow tracking
 10. FastAPI service + demo page
 11. Tests, CI, Docker
 12. Deploy + README (deploy needs user's own GitHub/host accounts)
+
+## Gotchas
+- macOS: FAISS + LightGBM in one process hang/segfault (two OpenMP copies). Pipeline runs `build` (FAISS, 1 thread) and `train` (LightGBM) as separate processes.

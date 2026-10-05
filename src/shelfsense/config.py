@@ -22,3 +22,5 @@ VAL_START = pd.Timestamp("2022-07-01")
 TEST_START = pd.Timestamp("2023-01-01")
 
 SEED = 42
+
+RANKER_FILE = ARTIFACTS_DIR / "ranker.txt"

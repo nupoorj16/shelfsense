@@ -78,3 +78,14 @@ Key ideas from each step, in plain language, plus "why we chose X over Y".
 
 ### Known limitation (be honest in interviews)
 - The 5-core filter is computed over all years, so it slightly uses future info to decide which users/products to keep. This is the standard benchmark practice (same as the dataset authors' 5-core files), but a stricter setup would filter on training data only.
+
+---
+
+## Step 7: Evaluate ranker vs. baselines
+
+### Concepts
+- **Leakage bug caught:** the first draft trained the ranker on a split's answers and scored it on the same answers. Fix: train on val, score only on test.
+- **Recall@K / NDCG@K:** did the real purchases show up in the top K, and how high. Test result: ranker 0.030 Recall@10 vs. popularity 0.019.
+- **OpenMP clash (macOS):** FAISS and LightGBM each bundle their own thread library. Used together in one process, LightGBM hung forever and FAISS segfaulted.
+  Fix: FAISS pinned to 1 thread, and the pipeline runs as two processes (`build` with FAISS, `train` with LightGBM). Candidates pass between them via parquet.
+- Debugging method worth mentioning in interviews: `ps` showed 0% CPU, `sample` showed the exact stuck thread barrier.
