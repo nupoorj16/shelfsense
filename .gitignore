@@ -9,6 +9,7 @@ __pycache__/
 # Leading "/" = only the folder at the project root, not src/shelfsense/data/.
 /data/
 /models/
+/artifacts/
 /mlruns/
 /mlartifacts/
 
