@@ -6,7 +6,7 @@ import sys
 
 import pandas as pd
 
-from shelfsense.config import ARTIFACTS_DIR, ITEMS_FILE, RANKER_FILE
+from shelfsense.config import ARTIFACTS_DIR, PRODUCTS_FILE, RANKER_FILE
 from shelfsense.evaluation import evaluate, load_eval_set
 from shelfsense.ranker import label_candidates, rank, train_ranker
 
@@ -22,7 +22,7 @@ def _prepare(split, items, retriever):
         f"users: {len(es.users):,}, reachable: {reach}/{truth_items} ({reach / truth_items:.1%})"
     )
     ctx = build_context(es.history, items, retriever)
-    cands = build_candidates(ctx, es.users, n_emb=150, n_cooc=150, n_pop=100)
+    cands = build_candidates(ctx, es.users, n_emb=150, n_cooc=150, n_pop=100, n_cold=50)
     print(f"  {len(cands):,} candidate pairs")
     return es, cands
 
@@ -37,8 +37,8 @@ def build() -> None:
 
     print("Loading data...")
     vectors, ids = load_embeddings()
-    items = pd.read_parquet(ITEMS_FILE)
-    retriever = EmbeddingRetriever(vectors, ids, set(items["parent_asin"]))
+    items = pd.read_parquet(PRODUCTS_FILE)
+    retriever = EmbeddingRetriever(vectors, ids)
     baselines = {}
     for split in ("val", "test"):
         print(f"\n=== {split.upper()} ===")

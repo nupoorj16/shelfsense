@@ -89,3 +89,14 @@ Key ideas from each step, in plain language, plus "why we chose X over Y".
 - **OpenMP clash (macOS):** FAISS and LightGBM each bundle their own thread library. Used together in one process, LightGBM hung forever and FAISS segfaulted.
   Fix: FAISS pinned to 1 thread, and the pipeline runs as two processes (`build` with FAISS, `train` with LightGBM). Candidates pass between them via parquet.
 - Debugging method worth mentioning in interviews: `ps` showed 0% CPU, `sample` showed the exact stuck thread barrier.
+
+---
+
+## Step 8: Cold start
+
+### Concepts
+- **Cold item / cold user:** a product or person with no history. Co-occurrence and popularity cannot see them; only content (embeddings) can.
+- **Measured first:** 38% of test purchases are cold products, but the original system put only ~1% of them in its candidates and recommended almost none.
+- **Survivorship trap avoided:** the 5-core catalog has only ~2K products without history, and they are there *because* they later got 5+ reviews. Searching only those almost gives away the answer. Fair pool: every embedded product with no history (~270K).
+  Product features come from the full product table, so missing metadata cannot reveal which products will be reviewed. This also made the warm retrieval honest (warm retriever only sees products with history).
+- **Result (negative, and that is fine):** cold-product Recall@10 = 0 (0.14% of cold purchases reach the candidates). Cold users via popularity: Recall@10 0.026.

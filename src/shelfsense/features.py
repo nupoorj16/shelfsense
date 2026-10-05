@@ -17,4 +17,5 @@ FEATURES = [
     "in_emb",
     "in_cooc",
     "in_pop",
+    "in_cold",
 ]

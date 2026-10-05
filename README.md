@@ -12,10 +12,16 @@ Amazon Reviews 2023 dataset (McAuley Lab, UCSD; Hou et al. 2024, arXiv:2403.0395
 |---|---|---|---|
 | Co-occurrence | 0.0075 | 0.0053 | 0.0202 |
 | Popularity | 0.0190 | 0.0137 | 0.0564 |
-| **Two-stage** | **0.0304** | **0.0202** | **0.0799** |
+| **Two-stage** | **0.0302** | **0.0205** | **0.0789** |
 
 Time-based split (train < 2022-07, val to 2022-12, test 2023). The ranker is trained on val only. Only 61.8% of test
 purchases are of previously seen products, which caps absolute scores.
+
+## Cold start (test split)
+- **Cold products** (38% of test purchases have no prior reviews): a dedicated embedding-only candidate source over all ~270K
+  unreviewed products found only 0.14% of them in the top 50, so Recall@10 on cold products is 0. Content embeddings alone cannot
+  pick the few products that take off from a pool this large. Warm-product Recall@10 is 0.033.
+- **Cold users** (1,338 users with no history): popularity fallback gets Recall@10 0.026 (small sample).
 
 ## Run
 

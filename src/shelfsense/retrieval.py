@@ -29,6 +29,11 @@ class EmbeddingRetriever:
         self.index = faiss.IndexFlatIP(vectors.shape[1])
         self.index.add(vectors[keep])
 
+    def restricted_to(self, catalog: set[str]) -> "EmbeddingRetriever":
+        """Same vectors, but only `catalog` can be recommended."""
+        ids = sorted(self.row_of, key=self.row_of.__getitem__)
+        return EmbeddingRetriever(self.vectors, ids, catalog)
+
     def vector_for(self, item: str) -> np.ndarray | None:
         row = self.row_of.get(item)
         return None if row is None else self.vectors[row]
