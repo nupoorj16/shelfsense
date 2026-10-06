@@ -47,9 +47,12 @@ cite, never commit raw data. Category Beauty_and_Personal_Care, filtered to cate
 7. Evaluate vs. baselines (Recall@K, NDCG@K) — DONE (ranker R@10 0.0302 vs popularity 0.0190)
 8. Cold start — DONE (cold products Recall@10 = 0; cold users via popularity 0.026; see RESUME_NOTES)
 9. MLflow tracking — DONE (SQLite store mlflow.db; view: `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`)
-10. FastAPI service + demo page  <- CURRENT
-11. Tests, CI, Docker
-12. Deploy + README (deploy needs user's own GitHub/host accounts)
+10. FastAPI service + demo page — DONE (a5a307b)
+11. Tests, CI, Docker — DONE (21 tests, GitHub Actions, Dockerfile verified locally)
+12. Deploy + README  <- CURRENT (deploy needs user's own GitHub/host accounts)
 
 ## Gotchas
 - macOS: FAISS + LightGBM in one process hang/segfault (two OpenMP copies). Pipeline runs `build` (FAISS, 1 thread) and `train` (LightGBM) as separate processes.
+- Serving (`serving.py`): `import lightgbm` must come BEFORE faiss (else segfault in lgb.Booster). OpenMP thread count is per-thread, so `EmbeddingRetriever.search` sets faiss threads=1 on every call (FastAPI handlers run in worker threads).
+- mlflow lives in the `train` dependency group (`uv run --group train ...`); the Docker image excludes it.
+- Docker image has no data: mount data/interim, data/processed, artifacts at /app/... (README).

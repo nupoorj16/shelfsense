@@ -27,8 +27,24 @@ purchases are of previously seen products, which caps absolute scores.
 
 ```
 uv run python -m shelfsense.data.download && uv run python -m shelfsense.data.build_products && uv run python -m shelfsense.data.build_reviews
-uv run python -m shelfsense.pipeline
+uv run --group train python -m shelfsense.pipeline   # trains the ranker, logs to MLflow
 ```
+
+## Serve
+
+```
+uv run uvicorn shelfsense.api:app          # http://127.0.0.1:8000 (demo page), /docs (API)
+```
+Endpoints: `GET /search?q=...`, `GET /recommend?asin=...&k=10` (repeat `asin` for several viewed products), `GET /health`.
+A one-item history is far less information than the ranker saw in training, so item-to-item results are looser than the offline numbers.
+
+Docker (model and data are mounted, not baked into the image):
+```
+docker build -t shelfsense .
+docker run -p 8000:8000 -v $PWD/data/interim:/app/data/interim:ro -v $PWD/data/processed:/app/data/processed:ro -v $PWD/artifacts:/app/artifacts:ro shelfsense
+```
+Tests and lint: `uv run pytest` and `uv run ruff check .` (also run by GitHub Actions on every push).
+Experiment history: `uv run --group train mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 
 ## How I used AI
 Steps 1–2 (setup, data download/exploration) I wrote myself with mentoring. Steps 3 onward were written by Claude and reviewed by me.

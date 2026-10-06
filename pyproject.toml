@@ -11,7 +11,6 @@ dependencies = [
     "faiss-cpu>=1.15.1",
     "fastapi>=0.142.2",
     "lightgbm>=4.7.0",
-    "mlflow>=3.16.1",
     "pandas>=3.0.6",
     "pyarrow>=25.0.1",
     "scipy>=1.18.1",
@@ -27,11 +26,13 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "ipykernel>=7.4.0",
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "ruff>=0.16.9",
 ]
 train = [
+    "mlflow>=3.16.1",
     "sentence-transformers>=6.1.0",
 ]

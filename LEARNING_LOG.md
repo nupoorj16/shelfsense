@@ -109,3 +109,12 @@ Key ideas from each step, in plain language, plus "why we chose X over Y".
 - **Storage:** local SQLite file `mlflow.db` (git-ignored). View with `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 - **Gotchas hit:** `mlflow-skinny` has no SQLite/UI (use full `mlflow`); metric names can't contain `@` (we log `recall_at_10`).
 - Logging lives in the `train` process only, so it never shares a process with FAISS (OpenMP clash).
+
+## Steps 10–11: API, tests, CI, Docker
+
+### Concepts
+- **Serving = same two stages, online.** Viewed product(s) become a one-person history; candidates + LightGBM score them (~0.35 s). Heavy objects (FAISS indexes, co-purchase matrix) are built once at startup.
+- **New products** (no purchase history) fall back to embedding similarity only.
+- **Bug worth telling in interviews:** server died silently on the first `/recommend`. Cause: OpenMP's thread setting is per thread and FastAPI runs handlers in worker threads. Fix: set FAISS to 1 thread inside every search; import LightGBM before FAISS.
+- **Tests:** synthetic mini-catalog + fake scorer, so CI needs no dataset. FastAPI `TestClient` tests status codes (200/404/422).
+- **CI:** GitHub Actions runs ruff + pytest on each push. **Docker:** deps layer cached; data mounted rather than baked in (image 830 MB, verified serving on Linux).

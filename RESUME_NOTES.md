@@ -30,3 +30,7 @@ Single run, one seed, no confidence intervals yet. Steps 3+ AI-written, user-rev
 
 ## MLflow
 - Each pipeline training run is logged to MLflow (params, metrics for ranker + baselines, feature importance, model artifact). Re-run reproduced test Recall@10 0.0302 (seed fixed, early stop at iteration 96).
+
+## Serving / engineering
+- FastAPI service + demo page; recommendation latency ~0.35 s per request on an M2 (single viewed product, ~1.2M interactions, 320K products); startup ~8 s.
+- 21 pytest tests, ruff, GitHub Actions CI, Dockerfile (image 830 MB; verified end to end in a Linux container).
