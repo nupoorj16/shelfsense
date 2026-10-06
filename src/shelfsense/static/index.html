@@ -3,51 +3,187 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ShelfSense</title>
+<title>ShelfSense · Customers who viewed this also liked</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; }
-  h1 { margin-bottom: 0; } .sub { color: #666; margin-top: .25rem; }
-  input { width: 100%; padding: .6rem; font-size: 1rem; box-sizing: border-box; }
-  ul { list-style: none; padding: 0; }
-  li { padding: .6rem .7rem; border-bottom: 1px solid #eee; }
-  li.pick { cursor: pointer; } li.pick:hover { background: #f5f5ff; }
-  .meta { color: #666; font-size: .85rem; }
-  .chip { display: inline-block; background: #eef; border-radius: 4px; padding: 0 .4rem; font-size: .75rem; margin-right: .4rem; }
-  #viewed { background: #fafafa; border-left: 4px solid #99f; padding: .5rem .8rem; margin: 1rem 0; }
+  :root {
+    --bg: #fdf8fb; --card: #ffffff; --ink: #2a1f2d; --muted: #7a6b80; --line: #f0e3ec;
+    --brand: #c2287a; --brand2: #7c3aed; --makeup: #d6336c; --skin: #0d9488; --shadow: 0 6px 24px rgba(124, 58, 237, .10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17111a; --card: #221a27; --ink: #f5ecf7; --muted: #aa98b0; --line: #34283b; --shadow: 0 6px 24px rgba(0,0,0,.35); }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.45; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 1.2rem; }
+
+  header { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; padding: 2.6rem 0 4.6rem; }
+  .logo { font-weight: 800; letter-spacing: .02em; opacity: .95; }
+  h1 { font-size: clamp(1.8rem, 4.5vw, 2.8rem); margin: .6rem 0 .4rem; line-height: 1.15; }
+  header p { max-width: 640px; margin: 0; opacity: .92; font-size: 1.05rem; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin: -2.6rem 0 1.6rem; }
+  .step { background: var(--card); border-radius: 14px; padding: .9rem 1rem; box-shadow: var(--shadow); font-size: .9rem; }
+  .step b { display: block; color: var(--brand); margin-bottom: .15rem; }
+  .step span { color: var(--muted); }
+
+  .searchbox { position: relative; }
+  .searchbox input { width: 100%; padding: 1rem 1.2rem; font-size: 1.1rem; border-radius: 14px; border: 2px solid var(--line); background: var(--card); color: var(--ink); box-shadow: var(--shadow); outline: none; }
+  .searchbox input:focus { border-color: var(--brand2); }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin: .8rem 0 0; align-items: center; color: var(--muted); font-size: .88rem; }
+  .chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: .3rem .8rem; cursor: pointer; font-size: .88rem; }
+  .chip:hover { border-color: var(--brand); color: var(--brand); }
+
+  h2 { font-size: 1.15rem; margin: 2rem 0 .8rem; }
+  h2 small { font-weight: 400; color: var(--muted); font-size: .85rem; margin-left: .4rem; }
+  .results { display: grid; gap: .5rem; }
+  .result { display: flex; justify-content: space-between; gap: 1rem; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .7rem .9rem; cursor: pointer; }
+  .result:hover { border-color: var(--brand2); transform: translateY(-1px); }
+  .result .add { color: var(--brand2); font-weight: 600; white-space: nowrap; font-size: .9rem; }
+
+  .basket { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .viewed { display: flex; align-items: center; gap: .5rem; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--brand2); border-radius: 10px; padding: .45rem .5rem .45rem .8rem; max-width: 100%; }
+  .viewed .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; font-size: .9rem; }
+  .viewed button { border: 0; background: transparent; color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .viewed button:hover { color: var(--brand); }
+  .method { font-size: .85rem; color: var(--muted); margin-top: .6rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: .5rem; position: relative; cursor: pointer; transition: transform .12s; }
+  .card:hover { transform: translateY(-3px); }
+  .rank { position: absolute; top: .7rem; right: .8rem; font-weight: 800; color: var(--line); font-size: 1.6rem; }
+  .pill { align-self: flex-start; border-radius: 999px; padding: .1rem .6rem; font-size: .72rem; font-weight: 700; color: #fff; }
+  .pill.Makeup { background: var(--makeup); } .pill.Skin { background: var(--skin); }
+  .title { font-weight: 600; font-size: .95rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta { color: var(--muted); font-size: .85rem; display: flex; justify-content: space-between; margin-top: auto; }
+  .bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand2)); }
+  .hint { color: var(--muted); font-size: .85rem; margin-top: .8rem; }
+
+  .about { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.4rem; margin: 2.4rem 0 3rem; font-size: .92rem; }
+  .about h3 { margin-top: 0; }
+  .stats { display: flex; flex-wrap: wrap; gap: 1.6rem; margin: 1rem 0; }
+  .stat b { display: block; font-size: 1.6rem; color: var(--brand); }
+  .stat span { color: var(--muted); font-size: .8rem; }
+  .empty, .loading { color: var(--muted); padding: 1rem 0; }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr; margin-top: -2.2rem; } }
 </style>
 </head>
 <body>
-<h1>ShelfSense</h1>
-<p class="sub">Customers who viewed this also liked... Search for a makeup or skincare product, then pick it.</p>
-<input id="q" placeholder="e.g. vitamin c serum, matte lipstick" autofocus>
-<ul id="results"></ul>
-<div id="viewed" hidden></div>
-<ul id="recs"></ul>
+<header>
+  <div class="wrap">
+    <div class="logo">✦ ShelfSense</div>
+    <h1>Customers who viewed this also liked…</h1>
+    <p>Pick a makeup or skincare product you like. A two-stage AI recommender, trained on millions of real Amazon reviews, suggests what to look at next.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="steps">
+    <div class="step"><b>1 · Pick</b><span>Search and add products you've "viewed".</span></div>
+    <div class="step"><b>2 · Retrieve</b><span>Embeddings + FAISS shortlist ~350 similar or co-bought products.</span></div>
+    <div class="step"><b>3 · Rank</b><span>A LightGBM model orders the shortlist, best first.</span></div>
+  </div>
+
+  <div class="searchbox"><input id="q" placeholder="Search a product, e.g. vitamin c serum" autocomplete="off" autofocus></div>
+  <div class="chips">Try:
+    <button class="chip">vitamin c serum</button><button class="chip">matte lipstick</button>
+    <button class="chip">retinol</button><button class="chip">mascara</button>
+    <button class="chip">sunscreen</button><button class="chip">foundation</button>
+    <button class="chip">eyeshadow palette</button>
+  </div>
+  <div id="results" class="results"></div>
+
+  <section id="viewedSection" hidden>
+    <h2>You viewed</h2>
+    <div id="basket" class="basket"></div>
+    <div id="method" class="method"></div>
+  </section>
+
+  <section id="recsSection" hidden>
+    <h2>You might also like <small>click any card to add it to your views and keep exploring</small></h2>
+    <div id="recs" class="grid"></div>
+  </section>
+
+  <div class="about">
+    <h3>What is this?</h3>
+    <p>ShelfSense treats the products you view as a tiny shopping history. <b>Stage 1</b> casts a wide net using text embeddings
+    (products with similar meaning), "bought together" patterns and recent popularity. <b>Stage 2</b> is a learning-to-rank model
+    that scores every candidate on 17 signals, such as similarity, popularity, price and your category and brand habits. The match bar on each card is the ranker's score, relative to the other results.</p>
+    <div class="stats">
+      <div class="stat"><b>+59%</b><span>Recall@10 vs. a popularity baseline<br>(time-based test, 18K users)</span></div>
+      <div class="stat"><b>47K</b><span>products with purchase history</span></div>
+      <div class="stat"><b>1.2M</b><span>interactions</span></div>
+    </div>
+    <p style="color:var(--muted);margin-bottom:0">Data: Amazon Reviews 2023 (McAuley Lab, UCSD; Hou et al. 2024). This demo works best with a few viewed products;
+    one product alone gives the model less to go on.</p>
+  </div>
+</main>
+
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const row = p => `<div>${esc(p.title)}</div><div class="meta"><span class="chip">${esc(p.category)}</span>${esc(p.store || "")}${p.price ? " · $" + p.price.toFixed(2) : ""}</div>`;
+const pillClass = c => c === "Makeup" ? "Makeup" : "Skin";
+const meta = p => [p.store, p.price ? "$" + p.price.toFixed(2) : null].filter(Boolean).map(esc).join(" · ");
+let viewed = [];   // [{asin, title}]
+let found = [];    // latest search results
 let timer;
-$("q").addEventListener("input", () => {
-  clearTimeout(timer);
-  timer = setTimeout(async () => {
-    const q = $("q").value.trim();
-    if (q.length < 2) { $("results").innerHTML = ""; return; }
-    const items = await (await fetch("/search?q=" + encodeURIComponent(q))).json();
-    $("results").innerHTML = items.map(p => `<li class="pick" data-asin="${esc(p.asin)}">${row(p)}</li>`).join("");
-    $("results").onclick = e => { const li = e.target.closest("li.pick"); if (li) recommend(li.dataset.asin, items.find(p => p.asin === li.dataset.asin)); };
-  }, 250);
-});
-async function recommend(asin, product) {
-  $("recs").innerHTML = "<li>Loading...</li>";
-  const res = await fetch("/recommend?k=10&asin=" + encodeURIComponent(asin));
-  if (!res.ok) { $("recs").innerHTML = "<li>Something went wrong.</li>"; return; }
-  const data = await res.json();
-  $("viewed").hidden = false;
-  $("viewed").innerHTML = `<b>You viewed:</b> ${esc(product.title)}<div class="meta">Method: ${esc(data.source)}</div>`;
-  $("results").innerHTML = "";
-  $("recs").innerHTML = data.recommendations.map(p => `<li>${row(p)}</li>`).join("");
+
+async function search(q) {
+  q = q.trim();
+  if (q.length < 2) { $("results").innerHTML = ""; return; }
+  const res = await fetch("/search?limit=8&q=" + encodeURIComponent(q));
+  found = res.ok ? await res.json() : [];
+  $("results").innerHTML = found.length
+    ? found.map((p, i) => `<div class="result" data-i="${i}"><div><div>${esc(p.title)}</div><div class="meta" style="margin:0">${meta(p)}</div></div><span class="add">+ Add</span></div>`).join("")
+    : `<div class="empty">No products match "${esc(q)}". Try another word.</div>`;
 }
+$("q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => search($("q").value), 250); });
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => { $("q").value = b.textContent; search(b.textContent); });
+$("results").onclick = e => {
+  const row = e.target.closest(".result");
+  if (row) { add(found[+row.dataset.i]); $("results").innerHTML = ""; $("q").value = ""; }
+};
+
+function add(p) {
+  if (viewed.some(v => v.asin === p.asin)) return;
+  viewed.push({ asin: p.asin, title: p.title });
+  refresh();
+}
+$("basket").onclick = e => {
+  const b = e.target.closest("button[data-asin]");
+  if (b) { viewed = viewed.filter(v => v.asin !== b.dataset.asin); refresh(); }
+};
+
+async function refresh() {
+  $("viewedSection").hidden = viewed.length === 0;
+  $("recsSection").hidden = viewed.length === 0;
+  $("basket").innerHTML = viewed.map(v => `<div class="viewed"><span class="t" title="${esc(v.title)}">${esc(v.title)}</span><button data-asin="${esc(v.asin)}" aria-label="Remove">×</button></div>`).join("");
+  if (!viewed.length) return;
+  $("recs").innerHTML = '<div class="loading">Finding recommendations…</div>';
+  const qs = viewed.map(v => "asin=" + encodeURIComponent(v.asin)).join("&");
+  const res = await fetch(`/recommend?k=12&${qs}`);
+  if (!res.ok) { $("recs").innerHTML = '<div class="empty">Something went wrong. Try again.</div>'; return; }
+  const data = await res.json();
+  $("method").textContent = data.source === "two-stage"
+    ? "Method: candidates from embeddings, co-purchases and popularity, then ranked by LightGBM."
+    : "Method: this product is too new to have purchase history, so results are by text similarity only.";
+  const top = Math.max(...data.recommendations.map(r => r.score ?? 0));
+  const low = Math.min(...data.recommendations.map(r => r.score ?? 0));
+  const span = top - low || 1;
+  $("recs").innerHTML = data.recommendations.map((p, i) => `
+    <div class="card" data-i="${i}">
+      <span class="rank">${i + 1}</span>
+      <span class="pill ${pillClass(p.category)}">${esc(p.category)}</span>
+      <div class="title">${esc(p.title)}</div>
+      <div class="bar" title="Relative match strength"><i style="width:${Math.round(25 + 75 * ((p.score ?? 0) - low) / span)}%"></i></div>
+      <div class="meta"><span>${esc(p.store || "")}</span><span>${p.price ? "$" + p.price.toFixed(2) : ""}</span></div>
+    </div>`).join("");
+  window.lastRecs = data.recommendations;
+}
+$("recs").onclick = e => {
+  const c = e.target.closest(".card");
+  if (c && window.lastRecs) { add(window.lastRecs[+c.dataset.i]); window.scrollTo({ top: 0, behavior: "smooth" }); }
+};
 </script>
 </body>
 </html>
