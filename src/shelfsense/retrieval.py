@@ -55,6 +55,8 @@ class EmbeddingRetriever:
     def search(
         self, queries: np.ndarray, k: int, exclude: list[set[str]] | None = None
     ) -> tuple[list[list[str]], list[list[float]]]:
+        # The OpenMP thread count is per thread, so set it here too (web workers are other threads).
+        faiss.omp_set_num_threads(1)
         extra = max((len(e) for e in exclude), default=0) if exclude else 0
         scores, idx = self.index.search(queries, k + extra)
         items_out, scores_out = [], []
