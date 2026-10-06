@@ -71,6 +71,17 @@ def train_and_eval() -> None:
         print(name, {k: round(v, 4) for k, v in scores.items()})
     (ARTIFACTS_DIR / "results.json").write_text(json.dumps(results, indent=2))
 
+    from shelfsense.ranker import PARAMS
+    from shelfsense.tracking import log_run
+
+    run_id = log_run(
+        ranker,
+        {**PARAMS, "num_rounds": 200},
+        results,
+        {"train_pairs": len(val), "test_pairs": len(test)},
+    )
+    print("MLflow run:", run_id)
+
 
 def main() -> None:
     subprocess.run(

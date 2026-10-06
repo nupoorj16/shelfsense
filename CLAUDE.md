@@ -46,8 +46,8 @@ cite, never commit raw data. Category Beauty_and_Personal_Care, filtered to cate
 6. LightGBM ranker — DONE (82ddc41)
 7. Evaluate vs. baselines (Recall@K, NDCG@K) — DONE (ranker R@10 0.0302 vs popularity 0.0190)
 8. Cold start — DONE (cold products Recall@10 = 0; cold users via popularity 0.026; see RESUME_NOTES)
-9. MLflow tracking  <- CURRENT
-10. FastAPI service + demo page
+9. MLflow tracking — DONE (SQLite store mlflow.db; view: `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`)
+10. FastAPI service + demo page  <- CURRENT
 11. Tests, CI, Docker
 12. Deploy + README (deploy needs user's own GitHub/host accounts)
 

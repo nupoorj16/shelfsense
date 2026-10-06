@@ -100,3 +100,12 @@ Key ideas from each step, in plain language, plus "why we chose X over Y".
 - **Survivorship trap avoided:** the 5-core catalog has only ~2K products without history, and they are there *because* they later got 5+ reviews. Searching only those almost gives away the answer. Fair pool: every embedded product with no history (~270K).
   Product features come from the full product table, so missing metadata cannot reveal which products will be reviewed. This also made the warm retrieval honest (warm retriever only sees products with history).
 - **Result (negative, and that is fine):** cold-product Recall@10 = 0 (0.14% of cold purchases reach the candidates). Cold users via popularity: Recall@10 0.026.
+
+## Step 9: MLflow tracking
+
+### Concepts
+- **Experiment tracking:** every training run records its settings (params), scores (metrics) and files (artifacts), so you can compare runs later instead of trusting memory.
+- **What is logged per run:** LightGBM params, seed, best iteration (early stopping), train/test candidate counts, Recall/NDCG@10/50 for ranker + both baselines, feature importance (gain), saved model and results.json.
+- **Storage:** local SQLite file `mlflow.db` (git-ignored). View with `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
+- **Gotchas hit:** `mlflow-skinny` has no SQLite/UI (use full `mlflow`); metric names can't contain `@` (we log `recall_at_10`).
+- Logging lives in the `train` process only, so it never shares a process with FAISS (OpenMP clash).

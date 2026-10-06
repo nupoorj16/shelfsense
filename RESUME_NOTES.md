@@ -27,3 +27,6 @@ beauty reviews; on a time-based test split it beat a popularity baseline by 59% 
 
 ## Caveat to state honestly
 Single run, one seed, no confidence intervals yet. Steps 3+ AI-written, user-reviewed.
+
+## MLflow
+- Each pipeline training run is logged to MLflow (params, metrics for ranker + baselines, feature importance, model artifact). Re-run reproduced test Recall@10 0.0302 (seed fixed, early stop at iteration 96).
