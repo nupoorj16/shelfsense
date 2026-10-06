@@ -49,7 +49,7 @@ cite, never commit raw data. Category Beauty_and_Personal_Care, filtered to cate
 9. MLflow tracking — DONE (SQLite store mlflow.db; view: `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`)
 10. FastAPI service + demo page — DONE (a5a307b)
 11. Tests, CI, Docker — DONE (21 tests, GitHub Actions, Dockerfile verified locally)
-12. Deploy + README  <- CURRENT (deploy needs user's own GitHub/host accounts)
+12. Deploy + README — README DONE; deploy pending (user accounts)  <- CURRENT (deploy needs user's own GitHub/host accounts)
 
 ## Gotchas
 - macOS: FAISS + LightGBM in one process hang/segfault (two OpenMP copies). Pipeline runs `build` (FAISS, 1 thread) and `train` (LightGBM) as separate processes.
