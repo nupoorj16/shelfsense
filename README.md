@@ -79,6 +79,10 @@ docker run -p 8000:8000 \
   -v $PWD/artifacts:/app/artifacts:ro shelfsense
 ```
 
+Deploy (Hugging Face Space, Docker SDK): `uv run python -m shelfsense.deploy` builds `space/` (75 MB: embeddings for the 47K products
+with history in float16, no new-product pool, no raw data). On the 10 test products tried, its top-10 lists matched the full model's
+exactly. Push that folder to a new Space. The demo needs about 1 GB of RAM.
+
 Tests and lint: `uv run pytest` and `uv run ruff check .` (also run by GitHub Actions on every push).
 Experiment history: `uv run --group train mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 

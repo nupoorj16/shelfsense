@@ -65,6 +65,9 @@ class Recommender:
     @classmethod
     def load(cls) -> "Recommender":
         vectors, ids = load_embeddings()
+        vectors = vectors.astype(
+            np.float32
+        )  # deploy bundles store float16; FAISS needs float32
         products = pd.read_parquet(PRODUCTS_FILE)
         history = pd.read_parquet(INTERACTIONS_FILE)
         ranker = lgb.Booster(model_file=str(RANKER_FILE))

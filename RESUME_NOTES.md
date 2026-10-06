@@ -34,3 +34,4 @@ Single run, one seed, no confidence intervals yet. Steps 3+ AI-written, user-rev
 ## Serving / engineering
 - FastAPI service + demo page; recommendation latency ~0.35 s per request on an M2 (single viewed product, ~1.2M interactions, 320K products); startup ~8 s.
 - 21 pytest tests, ruff, GitHub Actions CI, Dockerfile (image 830 MB; verified end to end in a Linux container).
+- Deploy bundle: 1 GB of files shrunk to 75 MB (float16 embeddings, 47K products with history only); top-10 lists identical to the full model on 10 spot-check queries (not a full offline re-evaluation).
